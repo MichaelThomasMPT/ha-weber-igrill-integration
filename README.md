@@ -1,1 +1,0 @@
-# ha-weber-igrill-integration
