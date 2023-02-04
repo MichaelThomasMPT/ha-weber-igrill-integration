@@ -18,11 +18,7 @@ from homeassistant.helpers import device_registry as dr
 
 from .const import CONF_ENTRY_MANUAL, CONF_ENTRY_METHOD, CONF_ENTRY_SCAN, DOMAIN, WEBER_MAC_ID
 
-from bleak import BleakClient, BleakError, BleakScanner
-from bleak.backends.client import BaseBleakClient
-from bleak.backends.device import BLEDevice
-from bleak_retry_connector import establish_connection
-
+from bleak import BleakError, BleakScanner
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -46,7 +42,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._abort_if_unique_id_configured()
 
         self.devices = [
-            f"{discovery_info.address} ('Weber iGrill')"
+            f"{discovery_info.address} ('Weber iGrill')" #FIXME Don't harcode this name here
         ]
         return await self.async_step_device()
 
@@ -71,12 +67,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return await self.async_step_device()
 
     async def async_step_scan(
-        self, user_input: dict[str, Any] | None = None
+        self
     ) -> FlowResult:
         """Handle the discovery by scanning."""
         errors = {}
-        # if user_input is None:
-        #     return self.async_show_form(step_id="scan")
         scanner = async_get_scanner(self.hass)
         _LOGGER.debug("Preparing for a scan")
         # first we check if scanner from HA bluetooth is enabled
@@ -138,7 +132,7 @@ async def discover_weber_igrills(
 
     devices = await scanner.discover()
     for d in devices:
-        model = "iGrill" #FIXME don't hardcode this here, extract it somehow instead
+        model = "iGrill" #FIXME don't hardcode this here, extract it somehow instead so it's different per device
         if (d.address[0:8] == WEBER_MAC_ID): #This is the manufacturer MAC for Weber
           device_list.append({"ble_device": d, "model": model})
           _LOGGER.info(f"found {model} with mac: {d.address}, details:{d.details}")
